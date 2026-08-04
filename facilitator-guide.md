@@ -25,7 +25,7 @@ Complete these steps **before participants arrive:**
   - [ ] GitHub Copilot CLI (standalone) installed and authenticated (`copilot --version`)
   - [ ] GitHub CLI `gh` — **required only for the optional GitHub extension** (`gh --version`)
   - [ ] Internet access (npm install must reach the registry)
-  - [ ] A local Git repository to work in (or create one: `git init my-lab && cd my-lab`)
+  - [ ] A local Git repository to work in (or create one: `git init my-lab; cd my-lab`)
   - [ ] Windows: PowerShell 7+ recommended; avoid legacy cmd.exe
 
 ### Demo Prep (30 min, optional)

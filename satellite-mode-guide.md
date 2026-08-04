@@ -45,10 +45,7 @@ Use satellite mode when a repo needs to **read its team definition from elsewher
 
 ### 1 — Verify the Hub Exists
 
-```bash
-# macOS/Linux
-ls /path/to/team-hub/.squad/team.md
-# Windows PowerShell
+```powershell
 Get-Item C:\path\to\team-hub\.squad\team.md
 ```
 
@@ -56,8 +53,8 @@ Get-Item C:\path\to\team-hub\.squad\team.md
 
 ### 2 — Initialize the Satellite Repo
 
-```bash
-mkdir satellite-repo && cd satellite-repo
+```powershell
+mkdir satellite-repo; cd satellite-repo
 git init
 npx @bradygaster/squad-cli@latest init
 ```
@@ -67,14 +64,11 @@ npx @bradygaster/squad-cli@latest init
 ```json
 {
   "version": 1,
-  "teamRoot": "/absolute/path/to/team-hub"
+  "teamRoot": "C:\\SquadTeams\\team-hub"
 }
 ```
 
-Windows:
-```json
-{ "version": 1, "teamRoot": "C:\\Users\\yourname\\projects\\team-hub" }
-```
+Replace `C:\\SquadTeams\\team-hub` with your actual hub repository root path on disk.
 
 > ⚠️ **Portability:** Set `teamRoot` to the **hub repository root** — the coordinator reads `{teamRoot}/.squad/team.md`. A direct absolute path to the hub's `.squad/` directory (e.g. `…/team-hub/.squad`) is also supported via fallback resolution (`{teamRoot}/team.md`); it is not an error. Because this is an absolute path, gitignore the real file and commit a `.squad/config.json.example` with a safe placeholder instead.
 
@@ -84,9 +78,9 @@ Start a Copilot CLI session in the satellite repo.
 
 > 🟢 **Expected:** Coordinator greets with the **hub team's roster**. Init Mode means `teamRoot` is wrong or hub `team.md` is missing.
 
-```bash
+```powershell
 squad status          # reports active squad and backend
-cat .squad/config.json
+Get-Content .squad\config.json
 ```
 
 ### 5 — Set State Backend (Optional)
@@ -94,7 +88,7 @@ cat .squad/config.json
 ```json
 {
   "version": 1,
-  "teamRoot": "/absolute/path/to/team-hub",
+  "teamRoot": "C:\\SquadTeams\\team-hub",
   "stateBackend": "local"
 }
 ```

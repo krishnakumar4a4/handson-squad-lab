@@ -44,14 +44,14 @@ By the end of this session you will have:
 
 ---
 
-## 2. Setup Variants
+## 2. Setup — Fresh Init (Default)
 
-### Variant A — Fresh Init (Recommended)
+> **Non-default modes:** If you need to upgrade an existing installation, use an orphan/two-layer state backend, satellite mode, or external state, see **[alternative-modes-guide.md](./alternative-modes-guide.md)**.
 
 1. Create and enter a new Git repo:
 
-```bash
-mkdir squad-lab && cd squad-lab
+```powershell
+mkdir squad-lab; cd squad-lab
 git init
 ```
 
@@ -59,80 +59,25 @@ git init
 
 2. Initialize Squad:
 
-```bash
+```powershell
 npx @bradygaster/squad-cli@latest init
 ```
 
-> **Expected:** Squad prompts you to name your team, select an agent universe, and confirms `.squad/` directory created with `team.md` and `routing.md`. The coordinator file is placed at `.github/agents/squad.agent.md`.
+> **Expected:** Squad prompts you to name your team, select an agent universe, and confirms `.squad\` directory created with `team.md` and `routing.md`. The coordinator file is placed at `.github\agents\squad.agent.md`.
 
 3. Verify:
 
-```bash
-cat .squad/team.md
+```powershell
+Get-Content .squad\team.md
 ```
 
 > **Expected:** A markdown roster showing your coordinator and at least one member.
-
-### Variant B — Explicit State Backend (orphan or two-layer)
-
-Use this when you want Squad's state isolated on a separate Git branch (orphan) or split across local files and a remote branch (two-layer). This is common for shared repos or CI integration.
-
-```bash
-npx @bradygaster/squad-cli@latest init --state-backend orphan
-```
-
-> **Expected:** Init completes. Inspect `.squad/config.json` or run `squad doctor` to confirm the backend setting. Squad state will live on a separate orphan branch.
-
-For two-layer (local files + remote sync):
-
-```bash
-npx @bradygaster/squad-cli@latest init --state-backend two-layer
-```
-
-To sync state with remote:
-
-```bash
-squad sync --push
-```
-
-> **Expected:** `Syncing squad-state branch...` then confirmation. No-op for local backend.
-
----
-
-### Variant D — Satellite Mode (Shared Team Root)
-
-Use this when your repository should inherit its team definition from a Squad installation in another repository. See the dedicated guide for full setup, portability notes, and state backend interaction:
-
-**→ [Satellite Mode Guide](./satellite-mode-guide.md)**
-
----
-
-### Variant C — Upgrade an Existing Squad Installation
-
-If you already have Squad installed and want to update it:
-
-```bash
-squad upgrade
-```
-
-> **Expected:** Output lists files overwritten, then confirms completion.
-
-**What upgrade preserves vs. overwrites** (from `squad --help`):
-
-| Preserved | Overwritten |
-|-----------|-------------|
-| `.squad/` directory (your team state, charters, routing, decisions) | `squad.agent.md` |
-| `.ai-team/` directory if present | `.squad/templates/` directory |
-
-> **Note:** Upgrade does **not** touch your team configuration. Your roster, charters, and decisions are safe.
-
-**Codespaces / dev containers:** The setup flow is identical to the Linux commands above. No separate product setup is needed; run the same `npx @bradygaster/squad-cli@latest init` inside the container terminal.
 
 ---
 
 ## 2b. What to Commit
 
-After running `squad init` (or `squad upgrade`), review `git status` before committing. Repository policy takes precedence over these defaults.
+After running `squad init`, review `git status` before committing. Repository policy takes precedence over these defaults.
 
 ### Always commit — defines team behavior
 
@@ -152,22 +97,20 @@ After running `squad init` (or `squad upgrade`), review `git status` before comm
 | `.mcp.json` | MCP server bridge config (required for Copilot CLI integration) |
 | `.gitattributes` | Union-merge declarations for append-only Squad files |
 
-### Mutable state — commit behavior varies by backend
+### Mutable state — local backend (default for this lab)
 
-These files are append-only and managed by runtime state tools:
+These files are append-only and managed by runtime state tools. With the default `local` backend, they live in your working tree and commit to main:
 
-| Path | local backend | orphan / two-layer backend |
-|------|--------------|---------------------------|
-| `.squad/decisions.md` | Committed to main branch | Stored on a separate orphan/state branch |
-| `.squad/agents/{name}/history.md` | Committed to main branch | Stored on state branch |
-| `.squad/rai/audit-trail.md`, `.squad/fact-checker/audit-trail.md` | Committed to main branch | Stored on state branch |
-| `.squad/casting/history.json` | Committed to main branch | Stored on state branch |
+| Path | Notes |
+|------|-------|
+| `.squad/decisions.md` | Active decisions |
+| `.squad/agents/{name}/history.md` | Per-agent session history |
+| `.squad/rai/audit-trail.md`, `.squad/fact-checker/audit-trail.md` | Built-in audit trails |
+| `.squad/casting/history.json` | Agent-to-name casting history |
 
 > **`local` backend** (default when `config.json` has no backend key): all state lives in your working tree, committed to main. This is the simplest setup and what this lab uses.
 >
-> **`orphan` backend**: runtime state is isolated on a separate orphan branch, never touching main. Use `squad sync` to push/pull.
->
-> **`two-layer` backend**: static config on main; mutable state on a remote state branch, synced via `squad sync --push`.
+> For `orphan` or `two-layer` backends where state lives on a separate branch, see [alternative-modes-guide.md](./alternative-modes-guide.md).
 
 ### Ignored by default (do not commit)
 
@@ -195,26 +138,26 @@ Do not commit credentials, API keys, `.env` files, or any local secret material 
 
 The `squad cast` command displays the current roster. With flags it adds a new agent:
 
-```bash
-cat .squad/team.md
+```powershell
+Get-Content .squad\team.md
 ```
 
 > **Expected:** Markdown table with member names, roles, charter paths, and status.
 
 To add an agent interactively:
 
-```bash
+```powershell
 squad cast --name Riley --role "QA Engineer"
 ```
 
-> **Expected:** Prompts for role details, then appends Riley to `.squad/team.md`.
+> **Expected:** Prompts for role details, then appends Riley to `.squad\team.md`.
 
 ### Routing
 
-Routing rules live in `.squad/routing.md`. Read them:
+Routing rules live in `.squad\routing.md`. Read them:
 
-```bash
-cat .squad/routing.md
+```powershell
+Get-Content .squad\routing.md
 ```
 
 > **Expected:** A routing table mapping work types to agent names.
@@ -225,7 +168,7 @@ To understand routing decisions, inspect the table and note the label-based issu
 
 Check available roles and built-ins:
 
-```bash
+```powershell
 squad roles
 ```
 
@@ -233,7 +176,7 @@ squad roles
 
 To run Squad with a specific model, pass model flags through Copilot CLI when invoking the Squad agent. For example, using the `squad start` command:
 
-```bash
+```powershell
 squad start --tunnel --model claude-sonnet-4
 ```
 
@@ -243,7 +186,7 @@ squad start --tunnel --model claude-sonnet-4
 
 Check token usage from orchestration logs:
 
-```bash
+```powershell
 squad cost
 ```
 
@@ -251,16 +194,15 @@ squad cost
 
 Inspect the orchestration log directory:
 
-```bash
-ls .squad/orchestration-log/   # macOS/Linux
-Get-ChildItem .squad\orchestration-log\   # Windows PowerShell
+```powershell
+Get-ChildItem .squad\orchestration-log\
 ```
 
 > **Expected:** Empty on a fresh install; log files appear after triage or loop sessions.
 
 Run context hygiene to prune/archive state:
 
-```bash
+```powershell
 squad nap --dry-run
 ```
 
@@ -274,9 +216,9 @@ squad nap --dry-run
 
 **Goal:** Read your team state and understand routing. *(~10 min)*
 
-```bash
-cat .squad/team.md
-cat .squad/routing.md
+```powershell
+Get-Content .squad\team.md
+Get-Content .squad\routing.md
 squad roles --search writer
 ```
 
@@ -308,7 +250,7 @@ Task: "We need to add unit tests for the auth module."
 
 Check the current status:
 
-```bash
+```powershell
 squad status
 ```
 
@@ -316,7 +258,7 @@ squad status
 
 Review the `squad start` flags available:
 
-```bash
+```powershell
 squad start --help
 ```
 
@@ -324,7 +266,7 @@ squad start --help
 
 To launch Squad with a custom model (requires Copilot CLI):
 
-```bash
+```powershell
 squad start --model gpt-4o
 ```
 
@@ -336,14 +278,14 @@ squad start --model gpt-4o
 
 **Goal:** Explore session logs, memory, and ceremony patterns. *(~10 min)*
 
-```bash
+```powershell
 squad nap --dry-run
 squad cost --all
 ```
 
 Run a triage dry-run (no execution):
 
-```bash
+```powershell
 squad triage
 ```
 
@@ -351,8 +293,8 @@ squad triage
 
 Inspect decisions:
 
-```bash
-cat .squad/decisions.md
+```powershell
+Get-Content .squad\decisions.md
 ```
 
 > **Expected:** Active decisions or the governance template if none are recorded yet.
@@ -369,7 +311,7 @@ Try this if you want to see Squad in action on a real GitHub issue:
 2. The coordinator triages it and applies a `squad:{member}` label to route the work.
 3. Start a triage loop:
 
-```bash
+```powershell
 squad triage --execute --max-concurrent 1
 ```
 
