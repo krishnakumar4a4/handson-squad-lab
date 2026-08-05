@@ -2,11 +2,9 @@
 
 **Version:** Squad v0.11.0 · **Audience:** Users who need something other than a default fresh local init
 
-[← Back to hands-on guide](./hands-on-guide.md)
-
 ---
 
-This guide is the entry point for **non-default** Squad configurations. If you are doing a fresh init on Windows with the default local state backend, stay in `hands-on-guide.md` — you do not need this guide.
+This guide is the entry point for non-default Squad configurations. For the default Windows hands-on lab using local state, go directly to **[Readme.md](./Readme.md)**.
 
 ---
 
@@ -24,7 +22,7 @@ This guide is the entry point for **non-default** Squad configurations. If you a
 
 | Mode | Team definition | Mutable state | Commit to the working branch | Do not commit to the working branch |
 |---|---|---|---|---|
-| **Default init (`local`)** | Current repo: `.squad\team.md`, routing, charters | Current repo under `.squad\` | Squad configuration, team files, charters, decisions/history, `.github\`, `.copilot\mcp-config.json`, `.mcp.json` | Generated logs, caches, scratch files, and secrets listed in `.gitignore` |
+| **0 · Default init (`local`)** | Current repo: `.squad\team.md`, routing, charters | Current repo under `.squad\` | Squad configuration, team files, charters, decisions/history, `.github\`, `.copilot\mcp-config.json`, `.mcp.json` | Generated logs, caches, scratch files, and secrets listed in `.gitignore` |
 | **Orphan backend** | Current repo | Separate orphan branch | Static Squad configuration, routing, ceremonies, charters, `.github\`, `.mcp.json` | Runtime-owned decisions, histories, audit trails, casting state, and memory |
 | **Two-layer backend** | Current repo | Git notes for commit-scoped annotations plus an orphan branch for permanent state | Same static configuration as orphan mode | Same runtime-owned mutable state as orphan mode |
 | **Satellite mode** | Shared hub repo selected by `teamRoot` | Determined separately by the satellite's state backend | Satellite pointer/config and local integration files; hub repo commits the shared team definition | Do not duplicate the hub roster, routing, or charters in the satellite repo |
@@ -37,10 +35,11 @@ This guide is the entry point for **non-default** Squad configurations. If you a
 
 | # | I need to… | Go to |
 |---|---|---|
+| 0 | Fresh default init (local state) | [0 · Default Init](./Readme.md) |
 | 1 | Upgrade an existing Squad installation | [1 · Upgrade an Existing Installation](#1-upgrade-an-existing-installation) below |
-| 2 | Isolate mutable state on a separate branch (`orphan`) | [2 · Orphan Backend](#2-orphan-backend) below |
-| 3 | Split config on main / runtime state on a remote branch (`two-layer`) | [3 · Two-Layer State Backend](./two-layer-state-guide.md) |
-| 4 | Inherit a team definition from a shared hub repo (satellite) | [4 · Satellite Mode](./satellite-mode-guide.md) |
+| 2 | Isolate mutable state on a separate branch (`orphan`) | [2 · Orphan Backend](./modes/orphan/guide.md) |
+| 3 | Split config on main / runtime state on a remote branch (`two-layer`) | [3 · Two-Layer State Backend](./modes/two-layer/guide.md) |
+| 4 | Inherit a team definition from a shared hub repo (satellite) | [4 · Satellite Mode](./modes/satellite/guide.md) |
 | 5 | Store state under platform appdata (`external`) | [5 · External State](#5-external-state) below |
 
 ---
@@ -77,7 +76,7 @@ Orphan mode stores permanent mutable state on a separate orphan branch, keeping 
 
 **This mode has its own detailed guide:**
 
-**→ [Orphan State Backend Guide](./orphan-state-guide.md)** — prerequisites, MCP bridge setup, sync workflow, safe-edit rules, and recovery.
+**→ [Orphan State Backend — Setup Guide](./modes/orphan/guide.md)** · [Supplementary](./modes/orphan/supplementary.md)
 
 ---
 
@@ -87,7 +86,7 @@ Two-layer combines git notes (commit-scoped) with an orphan branch (permanent mu
 
 **This mode has its own detailed guide:**
 
-**→ [Two-Layer State Backend Guide](./two-layer-state-guide.md)** — prerequisites, MCP bridge setup, sync workflow, safe-edit rules, and recovery.
+**→ [Two-Layer State Backend — Setup Guide](./modes/two-layer/guide.md)** · [Supplementary](./modes/two-layer/supplementary.md)
 
 ---
 
@@ -97,7 +96,7 @@ Satellite mode lets a repository inherit its team definition (roster, routing, c
 
 **This mode has its own detailed guide:**
 
-**→ [Satellite Mode Guide](./satellite-mode-guide.md)** — prerequisites, step-by-step setup, portability notes, hub vs. satellite ownership, and common mistakes.
+**→ [Satellite Mode — Setup Guide](./modes/satellite/guide.md)** · [Supplementary](./modes/satellite/supplementary.md)
 
 ---
 
@@ -129,4 +128,4 @@ squad doctor
 
 ---
 
-*[← Back to hands-on guide](./hands-on-guide.md) · [Orphan State Guide](./orphan-state-guide.md) · [Two-Layer State Guide](./two-layer-state-guide.md) · [Satellite Mode Guide](./satellite-mode-guide.md)*
+*[Default Hands-On Lab](./Readme.md) · [Orphan State Guide](./modes/orphan/guide.md) · [Two-Layer State Guide](./modes/two-layer/guide.md) · [Satellite Mode Guide](./modes/satellite/guide.md)*

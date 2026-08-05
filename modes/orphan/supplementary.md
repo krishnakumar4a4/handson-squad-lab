@@ -1,8 +1,23 @@
-# Orphan State Backend Guide
+# Orphan State Backend — Supplementary Guide
 
-**Version:** Squad v0.11.0 · **Role:** Linus (Lab Engineer)
+**Version:** Squad v0.11.0
 
-[← Back to Alternative Modes Guide](./alternative-modes-guide.md) · [← Back to Hands-On Guide](./hands-on-guide.md)
+[← Setup Guide (guide.md)](./guide.md) · [← Alternative Modes Guide](../../alternative-modes-guide.md)
+
+---
+
+## When to Use Orphan Mode
+
+Orphan mode stores permanent mutable state on a separate orphan branch, keeping decisions and agent history out of the main branch history.
+
+**Use `orphan` when:**
+- Contributors should not see raw agent state in the main branch history.
+- You need to share mutable state across machines via explicit `squad sync`.
+- CI pipelines should not commit state to main.
+
+**Do not use `orphan`** if you want the simplest setup — use the default `local` init instead: [Readme.md](../../Readme.md).
+
+> For the full mode comparison table, see the [Key Distinctions](#key-distinctions) section below.
 
 ---
 
@@ -15,77 +30,15 @@
 | Satellite mode | `teamRoot` | Inherits team definition from a hub repo — independent of backend |
 | External state | `stateLocation: "external"` | Resolves state under platform appdata — independent of backend |
 
-`orphan` and `two-layer` are not interchangeable. Two-layer = orphan branch + git notes. Satellite mode and external state are separate mechanisms that work with any backend.
+`orphan` and `two-layer` are **not** interchangeable. Two-layer = orphan branch + git notes. Satellite mode and external state are separate mechanisms that work with any backend.
 
----
-
-## When to Use Orphan Mode
-
-Choose based on your needs:
+### Mode Comparison
 
 | If you want… | Use |
 |---|---|
-| Simplest setup; state visible in working tree | **`local`** (default) — [hands-on-guide.md](./hands-on-guide.md) |
-| State fully isolated from main; CI-safe; state never in `git log` of main | **`orphan`** (this guide) |
-| Everything orphan provides *plus* commit-scoped git notes annotations | **`two-layer`** — [two-layer-state-guide.md](./two-layer-state-guide.md) |
-
-**Use `orphan` when:**
-- Contributors should not see raw agent state in the main branch history.
-- You need to share mutable state across machines via explicit `squad sync`.
-- CI pipelines should not commit state to main.
-
-**Do not use `orphan` if** you just want the simplest setup — use `local` instead.
-
----
-
-## Windows Prerequisites
-
-```powershell
-node --version      # >= 22.5.0
-npm --version       # >= 10
-git --version
-copilot --version   # GitHub Copilot CLI (the standalone copilot command) — must be pre-installed and authenticated
-```
-
-Confirm `.mcp.json` at repo root contains a `squad_state` entry (see [MCP Bridge](#the-squad_state-mcp-bridge)). The bridge must be reachable before the first state write.
-
----
-
-## Safety Gate
-
-> ⚠️ Run `git status` before init. Confirm you have no uncommitted changes you need to keep. Squad will create files and may prompt to overwrite Squad-owned files on an existing installation.
-
----
-
-## New Repository — Initialization
-
-```powershell
-mkdir my-project; cd my-project
-git init
-npx @bradygaster/squad-cli@latest init --state-backend orphan
-```
-
-**Expected outcome:** `.squad\` created; `.squad\config.json` contains `"stateBackend": "orphan"`; `.mcp.json` updated; orphan state branch created.
-
-**Verify initialization:**
-
-```powershell
-Get-Content .squad\config.json
-# Expected: { "version": 1, "stateBackend": "orphan" }
-
-squad doctor
-# Expected: reports stateBackend: orphan, MCP bridge reachable, no errors
-```
-
----
-
-## Existing Repositories — Migration
-
-> ⚠️ **Migration is not covered by this guide.** No documented, safe in-place migration command has been confirmed. If you need to switch backends on a repository with existing state:
->
-> 1. **Back up your `.squad\` directory first.**
-> 2. Consult official Squad CLI documentation: `squad --help` and `squad init --help`.
-> 3. Do **not** manually edit `stateBackend` in `config.json` without using official tooling — this may cause state divergence or loss.
+| Simplest setup; state visible in working tree | **`local`** (default) — [Readme.md](../../Readme.md) |
+| State fully isolated from main; CI-safe | **`orphan`** (this guide) |
+| Everything orphan provides *plus* commit-scoped git notes | **`two-layer`** — [modes\two-layer\guide.md](../two-layer/guide.md) |
 
 ---
 
@@ -134,19 +87,39 @@ Managed exclusively by the runtime via the `squad_state` bridge. On the orphan b
 
 Collaborators share mutable state via explicit sync — there are no automatic pushes.
 
-- Before starting a session: `squad sync --pull`
-- After finishing a session: `squad sync --push`
-- Next collaborator: `squad sync --pull` before they begin
-
 ```powershell
 squad sync --pull   # pull mutable state from the remote state branch
 squad sync --push   # push local mutable state to the remote state branch
 ```
 
+### Sync Workflow
+
+Before starting a session:
+
+```powershell
+squad sync --pull
+```
+
+After finishing a session:
+
+```powershell
+squad sync --push
+```
+
+> **Expected:** Both commands may exit silently. This is normal — sync is a no-op until an active Copilot CLI session has written state through the MCP bridge. Verify results with `git branch -a`.
+
+### Detailed Collaboration Steps
+
+1. Before starting a session: `squad sync --pull`
+2. After finishing a session: `squad sync --push`
+3. Next collaborator: `squad sync --pull` before they begin
+
 > **Expected:** Both commands may exit silently with no output. This is normal — `squad sync` is a no-op until an active Copilot CLI session has written state through the MCP bridge. Do not expect `"State branch updated"` confirmation. Verify sync results by checking git refs:
+>
 > ```powershell
 > git branch -a
 > ```
+>
 > A `squad-state` branch will appear once state has been written through a live session.
 
 > **Flags:** Run `squad help` for the full command reference. (`squad sync --help` does not provide detailed flag help in v0.11.0 — use `squad help` instead.)
@@ -174,15 +147,21 @@ squad sync --push   # push local mutable state to the remote state branch
 
 ---
 
-## Verification
+## Existing Repositories — Migration
 
-```powershell
-Get-Content .squad\config.json    # confirm stateBackend: orphan
-squad status                      # confirm backend and version
-squad doctor                      # check MCP bridge reachable
-```
+> ⚠️ **Migration is not covered by this guide.** No documented, safe in-place migration command has been confirmed. If you need to switch backends on a repository with existing state:
+>
+> 1. **Back up your `.squad\` directory first.**
+> 2. Consult official Squad CLI documentation: `squad --help` and `squad init --help`.
+> 3. Do **not** manually edit `stateBackend` in `config.json` without using official tooling — this may cause state divergence or loss.
 
-> **v0.11.0 known limitation:** `squad doctor` may report false failures (e.g., `decisions.md` not found) for non-local backends — this is expected because decisions live on the state branch, not the working tree. Use `Get-Content .squad\config.json` and `squad status` as primary verification. Do not treat doctor warnings as errors unless state writes are actually failing.
+---
+
+## v0.11.0 Known Limitations
+
+- **`squad doctor` false warnings:** With `stateBackend: "orphan"`, doctor may report `decisions.md` not found — expected because decisions live on the state branch, not the working tree. Use `Get-Content .squad\config.json` and `squad status` as primary verification.
+- **Pre-commit hook message:** The hook may say "two-layer state" even when backend is `"orphan"`. The protection behavior is still correct.
+- **`squad sync --help`:** Does not provide detailed flag help in v0.11.0. Use `squad help` instead.
 
 ---
 
@@ -199,4 +178,4 @@ squad doctor                      # check MCP bridge reachable
 
 ---
 
-*Guide authored by Linus (Lab Engineer) · Squad v0.11.0*
+*[← Setup Guide](./guide.md) · [← Alternative Modes](../../alternative-modes-guide.md)*
