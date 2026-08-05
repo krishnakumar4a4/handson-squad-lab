@@ -1,4 +1,4 @@
-# Scenario 2 - Deploy and Test an App in Hyper-V
+# Scenario 2 - Goal-Based Closed-Loop Development with Squad
 
 **Estimated duration:** 20-30 minutes  
 **Prerequisite:** A Windows host with Hyper-V and Visual Studio C++ Build Tools
