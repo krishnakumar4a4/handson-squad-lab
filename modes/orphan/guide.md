@@ -37,13 +37,16 @@ npx @bradygaster/squad-cli@latest init --state-backend orphan
 
 > **Expected:** `.squad\` created; `.squad\config.json` contains `"stateBackend": "orphan"`; `.mcp.json` updated; orphan state branch created.
 
-### 2 — Verify `config.json`
+### 2 — Inspect the Generated Configuration
 
 ```powershell
-Get-Content .squad\config.json
+code .
 ```
 
-> **Expected:** `{ "version": 1, "stateBackend": "orphan" }`
+In Visual Studio Code, open:
+
+- `.squad\config.json` — confirm it contains `"stateBackend": "orphan"`.
+- `.mcp.json` — confirm it contains a `squad_state` entry.
 
 ### 3 — Check MCP Bridge
 
@@ -53,7 +56,7 @@ squad doctor
 
 > **Expected:** Reports `stateBackend: orphan`, MCP bridge reachable, no errors.
 >
-> **v0.11.0 known limitation:** `squad doctor` may report false failures (e.g., `decisions.md` not found) for non-local backends — this is expected because decisions live on the state branch. Use `Get-Content .squad\config.json` and `squad status` as primary verification.
+> **v0.11.0 known limitation:** `squad doctor` may report false failures (e.g., `decisions.md` not found) for non-local backends — this is expected because decisions live on the state branch. Use the configuration files in Visual Studio Code and `squad status` as primary verification.
 
 ### 4 — Confirm State Branch
 
@@ -63,27 +66,11 @@ git branch -a
 
 > **Expected:** A `squad-state` branch appears once state has been written through a live session. On a fresh init before any agent session, the branch may not exist yet — this is normal.
 
----
-
-## Verification Checklist
-
-- [ ] `Get-Content .squad\config.json` shows `"stateBackend": "orphan"`
-- [ ] `squad status` confirms backend and version
-- [ ] `squad doctor` shows MCP bridge reachable (ignore false `decisions.md` warning)
-- [ ] `.mcp.json` at repo root contains a `squad_state` entry
-- [ ] A git remote (`origin`) is configured for `squad sync` to work
-
----
-
-## Verification
-
 ```powershell
-Get-Content .squad\config.json    # confirm stateBackend: orphan
-squad status                      # confirm backend and version
-squad doctor                      # check MCP bridge reachable
+squad status
 ```
 
-> **v0.11.0 known limitation:** `squad doctor` may report false failures (e.g., `decisions.md` not found) for non-local backends — this is expected because decisions live on the state branch, not the working tree. Use `Get-Content .squad\config.json` and `squad status` as primary verification. Do not treat doctor warnings as errors unless state writes are actually failing.
+> **Expected:** Shows the Squad version and configuration. Treat the files inspected in Visual Studio Code as the source of truth if v0.11.0 displays the wrong backend.
 
 ---
 

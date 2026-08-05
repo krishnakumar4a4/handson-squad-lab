@@ -35,13 +35,16 @@ git init
 npx @bradygaster/squad-cli@latest init --state-backend two-layer
 ```
 
-### 2 — Verify `config.json`
+### 2 — Inspect the Generated Configuration
 
 ```powershell
-Get-Content .squad\config.json
+code .
 ```
 
-> **Expected:** `{ "version": 1, "stateBackend": "two-layer" }`
+In Visual Studio Code, open:
+
+- `.squad\config.json` — confirm it contains `"stateBackend": "two-layer"`.
+- `.mcp.json` — confirm it contains a `squad_state` entry.
 
 ### 3 — Confirm Status
 
@@ -61,7 +64,7 @@ squad doctor
 
 > **Expected:** Reports MCP bridge reachable.
 >
-> **v0.11.0 known false warnings:** Doctor may report `decisions.md` not found — expected because decisions live on the state branch. Use `Get-Content .squad\config.json` as primary verification.
+> **v0.11.0 known false warnings:** Doctor may report `decisions.md` not found — expected because decisions live on the state branch. Use the configuration files in Visual Studio Code as primary verification.
 
 ### 5 — Push Initial State
 
@@ -70,40 +73,6 @@ After a Copilot CLI session has run, push state to the remote:
 ```powershell
 squad sync --push
 ```
-
----
-
-## Verification Checklist
-
-- [ ] `Get-Content .squad\config.json` shows `"stateBackend": "two-layer"`
-- [ ] `squad status` confirms version (ignore `Mode: local` display issue)
-- [ ] `squad doctor` shows MCP bridge reachable (ignore `decisions.md` warning)
-- [ ] `.mcp.json` at repo root contains a `squad_state` entry
-- [ ] A git remote (`origin`) is configured
-
----
-
-## Verification Steps
-
-```powershell
-Get-Content .squad\config.json    # confirm stateBackend: two-layer
-squad status                      # confirm backend and version
-squad doctor                      # check MCP bridge
-```
-
-> **v0.11.0 known false warnings from `squad doctor`:** With `stateBackend: "two-layer"`, doctor may report:
-> - `decisions.md` not found — this is expected; decisions live on the state branch, not the working tree.
-> - `Mode: local` in output — this is a display issue; the actual configured backend is `two-layer`.
->
-> These warnings are CLI defects, not setup errors. Use `Get-Content .squad\config.json` and `.mcp.json` as primary verification. Only investigate further if state writes are actually failing.
-
-After confirming config, push initial state once a Copilot CLI session has run:
-
-```powershell
-squad sync --push
-```
-
----
 
 ## Sync Workflow (Summary)
 

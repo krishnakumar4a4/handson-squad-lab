@@ -20,11 +20,13 @@
 
 ### 1 — Verify the Hub Exists
 
+Open the hub repository in Visual Studio Code:
+
 ```powershell
-Get-Item C:\path\to\team-hub\.squad\team.md
+code C:\path\to\team-hub
 ```
 
-> **Expected:** File exists with a `## Members` section and at least one entry.
+Open `.squad\team.md` and confirm it contains a `## Members` section with at least one entry.
 
 ### 2 — Initialize the Satellite Repo
 
@@ -35,6 +37,14 @@ npx @bradygaster/squad-cli@latest init
 ```
 
 ### 3 — Set `teamRoot` in `.squad\config.json`
+
+Open the satellite repository in Visual Studio Code:
+
+```powershell
+code .
+```
+
+Edit `.squad\config.json`:
 
 ```json
 {
@@ -47,18 +57,15 @@ Replace `C:\\SquadTeams\\team-hub` with your actual hub repository root path on 
 
 > **JSON path escaping:** In JSON, each backslash must be written as `\\`. So the Windows path `C:\SquadTeams\team-hub` becomes `"C:\\SquadTeams\\team-hub"` in the JSON file.
 >
-> **PowerShell `ConvertTo-Json` warning:** May double-escape backslashes, producing `C:\\\\SquadTeams\\\\team-hub` (incorrect). Use a direct editor or `Set-Content` with a literal string:
->
-> ```powershell
-> Set-Content .squad\config.json -Value '{"version":1,"teamRoot":"C:\\SquadTeams\\team-hub"}'
-> ```
+> **PowerShell `ConvertTo-Json` warning:** It may double-escape backslashes, producing an incorrect path. Edit the JSON directly in Visual Studio Code.
 
 > **Portability:** `teamRoot` is an absolute path, so this file is **not portable across machines**. Gitignore the real file and commit a `.squad/config.json.example` with a safe placeholder.
 
 ### 4 — Verify Resolution
 
+In Visual Studio Code, confirm `.squad\config.json` contains the correct absolute `teamRoot`. Then run:
+
 ```powershell
-Get-Content .squad\config.json
 squad status
 ```
 
@@ -85,16 +92,6 @@ Add `stateBackend` to `config.json` if needed:
 | `"two-layer"` | Main branch for static config; remote state branch for mutable state |
 
 With `"orphan"` or `"two-layer"`, mutable state (decisions, history) lives on a branch in the **satellite repo** — not the hub.
-
----
-
-## Verification Checklist
-
-- [ ] `config.json` contains a valid `teamRoot` absolute path with double-escaped backslashes
-- [ ] `Get-Item {teamRoot}\.squad\team.md` returns a file with `## Members`
-- [ ] `squad status` runs without error
-- [ ] `copilot --agent squad` greets with hub team roster (not Init Mode)
-- [ ] Real `config.json` is gitignored; a `.example` placeholder is committed
 
 ---
 
