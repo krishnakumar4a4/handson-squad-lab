@@ -150,3 +150,5 @@ squad triage --execute --max-concurrent 1
 **→ [Supplementary Guide](./modes/init/supplementary.md)** — what to commit, conceptual background, troubleshooting, limitations, and responsible-use notes.
 
 **→ [Scenario 1 — Build a Codebase-Specialized Squad](./scenarios/scenario-1-specialized-team.md)** — clone your own repository, run Squad init, and ask Squad to create a team grounded in its codebase patterns.
+
+**→ [Scenario 2 — Deploy and Test an App in Hyper-V](./scenarios/scenario-2-hyperv-deployment.md)** — build an app with Squad, deploy it to a Windows Hyper-V VM, exercise its UI, and review an evidence-based report.
