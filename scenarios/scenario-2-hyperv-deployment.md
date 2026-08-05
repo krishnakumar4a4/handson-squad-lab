@@ -1,34 +1,33 @@
 # Scenario 2 - Deploy and Test an App in Hyper-V
 
 **Estimated duration:** 20-30 minutes  
-**Prerequisite:** A buildable Windows app repository and a running, unlocked Windows Hyper-V VM
+**Prerequisite:** A Windows host with Hyper-V and Visual Studio C++ Build Tools
 
 ## Goal
 
-Use Squad to build an app, deploy its artifact to a Windows Hyper-V VM, install and launch it through the VM UI, perform a few UI actions, and report the results.
+Use Squad to build the native Squad Counter app, deploy its executable to a Windows Hyper-V VM, exercise its UI, and report the results.
 
 ## Before You Start
 
 Create the test VM:
 
-1. Extract the downloaded **Windows 11 dev environment** image.
-2. Open **Hyper-V Manager** and select **New > Virtual Machine**.
-3. Choose **Generation 2**, select **Use an existing virtual hard disk**, and browse to the extracted `.vhdx` file.
-4. Start the VM, complete Windows sign-in, and leave the desktop unlocked.
+1. Open **Hyper-V Manager** and select **Quick Create**.
+2. Select **Windows 11 dev environment** and wait for creation to complete.
+3. Start the VM, sign in, and leave the desktop unlocked.
 
 Also confirm that:
 
 - GitHub Copilot CLI is installed and authenticated.
-- A host-to-guest artifact transfer method is available, such as an Enhanced Session shared drive.
+- Visual Studio or Visual Studio Build Tools includes **Desktop development with C++**.
 - Obtain the separately shared `hyperv-vm` custom agent definition and note its local file path.
 
 ## Step 1 - Clone the App and Enable Squad
 
-Replace the repository URL and folder name:
-
 ```powershell
-git clone git@github.com:OWNER/REPOSITORY.git REPOSITORY
-cd REPOSITORY
+mkdir C:\workshop\scenario-2
+cd C:\workshop\scenario-2
+git clone https://github.com/krishnakumar4a4/handson-squad-ui-app.git
+cd handson-squad-ui-app
 npx @bradygaster/squad-cli@latest init
 ```
 
@@ -55,7 +54,7 @@ Save your work, exit Copilot CLI, log off Windows, and sign back in with the sam
 Return to the repository and start Squad:
 
 ```powershell
-cd C:\path\to\REPOSITORY
+cd C:\workshop\scenario-2\handson-squad-ui-app
 copilot --agent squad
 ```
 
@@ -83,20 +82,21 @@ In your IDE, confirm that `.squad\team.md`, `.squad\routing.md`, and the special
 
 ## Step 5 - Build, Deploy, and Test
 
-In the same Squad session, replace the placeholders and run:
+In the same Squad session, replace `<VM_NAME>` and run:
 
 ```text
-Build and test this application using the repository's documented commands, then deploy it to the running Windows Hyper-V VM named <VM_NAME>.
+Build and test the Squad Counter app by running build.cmd. Confirm that the tests pass and that build\SquadCounter.exe is created. Then deploy it to the running Windows Hyper-V VM named <VM_NAME>.
 
-Use the configured host-to-guest transfer method to copy the installable artifact to <GUEST_DESTINATION>. Then delegate all guest UI work to the Hyper-V specialist:
+Use the configured host-to-guest transfer method to copy the executable to C:\SquadCounter\SquadCounter.exe in the VM. Then delegate all guest UI work to the Hyper-V specialist:
 1. Run a [PRECHECK] before interacting with the VM.
 2. Open PowerShell in the VM.
-3. Install the copied artifact using the repository's documented installation command.
-4. Start the application and wait for its UI to be ready.
-5. Perform these UI actions: <UI_ACTIONS>.
-6. Capture visual evidence before and after the UI actions.
+3. Start C:\SquadCounter\SquadCounter.exe and wait for its UI.
+4. Click Increase +1 twice, then click Decrease -1 once.
+5. Verify the counter displays 1 and the status says "Counter decreased. Current value: 1".
+6. Click Reset to 0 and verify the counter displays 0.
+7. Capture visual evidence before and after the UI actions.
 
-Stop and report the exact blocker if the build, transfer, WMI operation, installation, launch, or UI verification fails. Do not invent commands, paths, credentials, or successful results.
+Stop and report the exact blocker if the build, transfer, WMI operation, launch, or UI verification fails. Do not invent commands, paths, credentials, or successful results.
 ```
 
 Avoid using the keyboard or mouse in the VM while the specialist is working. You may watch through **Hyper-V Manager > VM > Connect**.
@@ -107,7 +107,7 @@ The final report should state:
 
 - build and test result;
 - artifact path and guest destination;
-- installation and launch result;
+- copy and launch result;
 - UI actions performed and observed outcome;
 - captured evidence and any blockers.
 
@@ -125,23 +125,56 @@ Enable Autopilot so Squad can continue without waiting for approval after every 
 
 ## Step 8 - Run a Closed-Loop Goal
 
-Choose a follow-up goal, replace the placeholders, and run:
+Replace `<VM_NAME>` and run:
 
 ```text
-Goal: Implement <FOLLOW_UP_GOAL> and prove that <EXPECTED_UI_OUTCOME> works in the Windows Hyper-V VM named <VM_NAME>.
+Goal: Add a "Double +2" button to Squad Counter and prove it works in the Windows Hyper-V VM named <VM_NAME>. Each click must add 2. The status must show "Counter doubled. Current value: 2" after the first click and "Counter doubled. Current value: 4" after the second.
 
 Work iteratively until the goal is verified:
-1. Make the required code changes, then build and test the application.
-2. Copy the new installable artifact to <GUEST_DESTINATION>.
-3. Ask the Hyper-V specialist to run a [PRECHECK], install or update the app, start it, and wait for its UI.
-4. Perform these UI actions: <UI_ACTIONS>.
-5. Capture visual evidence and compare the result with the expected outcome.
-6. If verification fails, diagnose the cause, fix it, then rebuild, redeploy, and verify again.
+1. Update the app and its counter tests.
+2. Run build.cmd and confirm the tests pass.
+3. Replace C:\SquadCounter\SquadCounter.exe in the VM with the new executable.
+4. Ask the Hyper-V specialist to run a [PRECHECK], start the updated app, and wait for its UI.
+5. Click Reset to 0, then click Double +2 twice.
+6. Verify the counter displays 4 and the status says "Counter doubled. Current value: 4".
+7. Capture visual evidence and compare the result with the expected outcome.
+8. If verification fails, diagnose the cause, fix it, then rebuild, redeploy, and verify again.
 
 Finish only when the expected UI outcome is visibly verified or an unrecoverable blocker is clearly reported. Return a report of the iterations, fixes, deployment result, UI actions, and evidence. Do not invent commands, paths, credentials, evidence, or successful results. Do not push changes or modify unrelated VM settings.
 ```
 
 When the goal is complete, enter `/autopilot` again to turn Autopilot off.
+
+## Known Issues
+
+### UAC Prompt in the VM
+
+The Hyper-V specialist may be unable to click **Yes** on the Windows secure-desktop UAC prompt. Synthetic input can cancel the prompt instead of approving it.
+
+If this occurs:
+
+1. Connect to the VM through Hyper-V Manager.
+2. Manually open **Windows Terminal** or **PowerShell** as administrator and approve UAC.
+3. Leave the elevated terminal open and focused.
+4. Tell Squad:
+
+```text
+Reuse the existing Administrator PowerShell terminal in the VM for all elevated commands. Do not close it or launch another elevated process.
+```
+
+The specialist can then type commands into the existing elevated terminal without triggering repeated UAC prompts.
+
+### No Visible VM Progress
+
+The specialist uses headless WMI screenshots and synthetic input, so desktop movement may be intermittent. A long pause can also mean the VM is waiting on a dialog or the agent is stuck.
+
+Ask Squad to capture and report progress explicitly:
+
+```text
+Capture a screenshot after every step, success, failure, or stuck state. Report the last action, current screen, result, next action, and any blocker. If no visible progress occurs, capture a fresh screenshot before continuing.
+```
+
+You can also watch through **Hyper-V Manager > VM > Connect**. Avoid using the keyboard or mouse unless Squad asks you to resolve a blocker.
 
 ---
 
