@@ -10,6 +10,29 @@ This guide is the entry point for **non-default** Squad configurations. If you a
 
 ---
 
+## Key Distinctions
+
+- **Satellite mode** and **state backend** are independent dials — a satellite repo can use any backend.
+- **Two-layer** = git notes + orphan branch. **Orphan** = orphan branch only. They are not the same.
+- **External state** is a third independent concern, separate from both satellite mode and `stateBackend`.
+- For any non-local backend, runtime-owned state files must **not** be manually edited.
+- Non-local backends route state through the `squad_state` MCP bridge — a background communication layer. It must be reachable before the first state write. See specific guides for bridge setup.
+
+---
+
+## Modes at a Glance
+
+| Mode | Team definition | Mutable state | Commit to the working branch | Do not commit to the working branch |
+|---|---|---|---|---|
+| **Default init (`local`)** | Current repo: `.squad\team.md`, routing, charters | Current repo under `.squad\` | Squad configuration, team files, charters, decisions/history, `.github\`, `.copilot\mcp-config.json`, `.mcp.json` | Generated logs, caches, scratch files, and secrets listed in `.gitignore` |
+| **Orphan backend** | Current repo | Separate orphan branch | Static Squad configuration, routing, ceremonies, charters, `.github\`, `.mcp.json` | Runtime-owned decisions, histories, audit trails, casting state, and memory |
+| **Two-layer backend** | Current repo | Git notes for commit-scoped annotations plus an orphan branch for permanent state | Same static configuration as orphan mode | Same runtime-owned mutable state as orphan mode |
+| **Satellite mode** | Shared hub repo selected by `teamRoot` | Determined separately by the satellite's state backend | Satellite pointer/config and local integration files; hub repo commits the shared team definition | Do not duplicate the hub roster, routing, or charters in the satellite repo |
+
+> **Repository policy wins:** Review `git status` and the mode-specific guide before committing. Never store credentials or local secret files in Squad state.
+
+---
+
 ## Choosing a Path
 
 | # | I need to… | Go to |
@@ -30,7 +53,9 @@ If Squad is already installed and you want to update Squad-owned files:
 squad upgrade
 ```
 
-> **Expected:** Lists files overwritten, then confirms completion.
+> **Expected:** Lists files overwritten, then confirms completion. Syncs skills to `.github/skills/`.
+>
+> If `squad.agent.md` has local customizations, upgrade backs it up to `squad.agent.md.local-backup` before overwriting — your customizations are not lost.
 
 **What upgrade preserves vs. overwrites:**
 
@@ -38,6 +63,7 @@ squad upgrade
 |---|---|
 | `.squad/` directory (team state, charters, routing, decisions) | `squad.agent.md` |
 | `.ai-team/` directory if present | `.squad/templates/` directory |
+| | `.github/skills/` (synced/overwritten with 19+ skills) |
 
 Your roster, charters, and decisions are safe. After upgrading, run `squad status` to confirm.
 
@@ -47,25 +73,11 @@ Your roster, charters, and decisions are safe. After upgrading, run `squad statu
 
 ## 2 · Orphan Backend
 
-Use when you want mutable state (decisions, history) fully isolated from your main branch — state files never appear in `git log` of main.
+Orphan mode stores permanent mutable state on a separate orphan branch, keeping decisions and agent history out of the main branch.
 
-```powershell
-npx @bradygaster/squad-cli@latest init --state-backend orphan
-```
+**This mode has its own detailed guide:**
 
-> **Expected:** Init completes. Inspect `.squad\config.json` or run `squad doctor` to confirm `stateBackend: "orphan"`.
-
-To sync state with remote:
-
-```powershell
-squad sync --push
-```
-
-> **Expected:** `Syncing squad-state branch...` then confirmation.
-
-> ⚠️ **Safety:** Do not manually edit state files (`.squad\decisions.md`, agent history, audit trails) under non-local backends. These are managed by the runtime via the `squad_state` MCP bridge. Direct edits cause state branch divergence.
-
-**→ Full details, prerequisites, MCP bridge setup, sync workflow, file ownership, and common mistakes: [Orphan State Backend Guide](./orphan-state-guide.md)**
+**→ [Orphan State Backend Guide](./orphan-state-guide.md)** — prerequisites, MCP bridge setup, sync workflow, safe-edit rules, and recovery.
 
 ---
 
@@ -91,7 +103,9 @@ Satellite mode lets a repository inherit its team definition (roster, routing, c
 
 ## 5 · External State
 
-External state (`stateLocation: "external"`) resolves mutable state under platform appdata rather than inside the repository. It is independent of satellite mode and `stateBackend`.
+External state (`stateLocation: "external"`) resolves mutable state under platform appdata rather than inside the repository. It is **independent** of satellite mode and `stateBackend`.
+
+**When to use:** Choose external state when you want Squad state outside the repository — for example, on a shared team machine where multiple projects share Squad state, or in CI environments where you cannot commit state to the repo.
 
 Set in `.squad\config.json`:
 
@@ -103,16 +117,15 @@ Set in `.squad\config.json`:
 }
 ```
 
-> Use `projectKey` to namespace state when multiple projects share the same appdata location. Confirm the `squad_state` MCP bridge is reachable before the first state write — Squad halts (does not silently fall back) if the bridge is unavailable.
+Use `projectKey` to namespace state when multiple projects share the same appdata location.
 
----
+**Requirements:** The `squad_state` MCP bridge must be reachable before the first state write. Squad halts (does not silently fall back) if the bridge is unavailable. Confirm with:
 
-## Key Distinctions
+```powershell
+squad doctor
+```
 
-- **Satellite mode** and **state backend** are independent dials — a satellite repo can use any backend.
-- **Two-layer** = git notes + orphan branch. **Orphan** = orphan branch only. They are not the same.
-- **External state** is a third independent concern, separate from both satellite mode and `stateBackend`.
-- For any non-local backend, runtime-owned state files must **not** be manually edited.
+> **Runtime verification note:** Verifying that external state is actually resolving correctly requires an active, authenticated Copilot CLI session. Static config (the JSON above) can be verified by inspection; runtime state read/write can only be confirmed through a live agent session. Do not rely solely on `squad status` output to confirm external state is working.
 
 ---
 

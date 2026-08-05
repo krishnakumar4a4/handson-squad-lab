@@ -49,7 +49,7 @@ Use satellite mode when a repo needs to **read its team definition from elsewher
 Get-Item C:\path\to\team-hub\.squad\team.md
 ```
 
-> 🟢 **Expected:** File exists with a `## Members` section and at least one entry.
+> **Expected:** File exists with a `## Members` section and at least one entry.
 
 ### 2 — Initialize the Satellite Repo
 
@@ -70,18 +70,26 @@ npx @bradygaster/squad-cli@latest init
 
 Replace `C:\\SquadTeams\\team-hub` with your actual hub repository root path on disk.
 
-> ⚠️ **Portability:** Set `teamRoot` to the **hub repository root** — the coordinator reads `{teamRoot}/.squad/team.md`. A direct absolute path to the hub's `.squad/` directory (e.g. `…/team-hub/.squad`) is also supported via fallback resolution (`{teamRoot}/team.md`); it is not an error. Because this is an absolute path, gitignore the real file and commit a `.squad/config.json.example` with a safe placeholder instead.
+> **JSON path escaping:** In JSON, each backslash must be written as `\\`. So the Windows path `C:\SquadTeams\team-hub` becomes `"C:\\SquadTeams\\team-hub"` in the JSON file.
+>
+> **PowerShell ConvertTo-Json warning:** If you build the JSON using PowerShell's `ConvertTo-Json`, verify the output carefully — it may double-escape backslashes, producing `C:\\\\SquadTeams\\\\team-hub` (four backslashes, two actual) which is an incorrect path. Use a direct editor or `Set-Content` with a literal string to avoid this:
+>
+> ```powershell
+> Set-Content .squad\config.json -Value '{"version":1,"teamRoot":"C:\\SquadTeams\\team-hub"}'
+> ```
+
+> **Portability:** Set `teamRoot` to the **hub repository root** — the coordinator reads `{teamRoot}/.squad/team.md`. Because this is an absolute path, gitignore the real file and commit a `.squad/config.json.example` with a safe placeholder instead.
 
 ### 4 — Verify Resolution
-
-Start a Copilot CLI session in the satellite repo.
-
-> 🟢 **Expected:** Coordinator greets with the **hub team's roster**. Init Mode means `teamRoot` is wrong or hub `team.md` is missing.
 
 ```powershell
 squad status          # reports active squad and backend
 Get-Content .squad\config.json
 ```
+
+> **Expected:** `squad status` reports the local `.squad` path and backend. It does **not** verify that `teamRoot` resolves correctly — static config can be confirmed by inspecting `config.json`.
+>
+> **Runtime roster verification** (confirming the hub's team.md is actually loaded) requires an authenticated Copilot CLI session: run `copilot --agent squad` in the satellite repo and confirm the coordinator greets with the **hub team's roster**. If you see Init Mode instead, `teamRoot` is wrong or hub `team.md` is missing.
 
 ### 5 — Set State Backend (Optional)
 

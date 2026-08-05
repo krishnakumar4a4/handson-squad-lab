@@ -21,11 +21,20 @@
 
 ## When to Use Orphan Mode
 
-**Good fit:** state fully isolated from main; CI environments where contributors should not see raw agent state; teams sharing state via explicit `squad sync`.
+Choose based on your needs:
 
-**Use `local` instead** for the simplest setup or when you want state reviewable in the working tree (default lab path — see [hands-on-guide.md](./hands-on-guide.md)).
+| If you want… | Use |
+|---|---|
+| Simplest setup; state visible in working tree | **`local`** (default) — [hands-on-guide.md](./hands-on-guide.md) |
+| State fully isolated from main; CI-safe; state never in `git log` of main | **`orphan`** (this guide) |
+| Everything orphan provides *plus* commit-scoped git notes annotations | **`two-layer`** — [two-layer-state-guide.md](./two-layer-state-guide.md) |
 
-**Use `two-layer` instead** when you also need commit-scoped annotations via git notes.
+**Use `orphan` when:**
+- Contributors should not see raw agent state in the main branch history.
+- You need to share mutable state across machines via explicit `squad sync`.
+- CI pipelines should not commit state to main.
+
+**Do not use `orphan` if** you just want the simplest setup — use `local` instead.
 
 ---
 
@@ -35,7 +44,7 @@
 node --version      # >= 22.5.0
 npm --version       # >= 10
 git --version
-copilot --version   # GitHub Copilot CLI authenticated
+copilot --version   # GitHub Copilot CLI (the standalone copilot command) — must be pre-installed and authenticated
 ```
 
 Confirm `.mcp.json` at repo root contains a `squad_state` entry (see [MCP Bridge](#the-squad_state-mcp-bridge)). The bridge must be reachable before the first state write.
@@ -125,23 +134,22 @@ Managed exclusively by the runtime via the `squad_state` bridge. On the orphan b
 
 Collaborators share mutable state via explicit sync — there are no automatic pushes.
 
+- Before starting a session: `squad sync --pull`
+- After finishing a session: `squad sync --push`
+- Next collaborator: `squad sync --pull` before they begin
+
 ```powershell
 squad sync --pull   # pull mutable state from the remote state branch
 squad sync --push   # push local mutable state to the remote state branch
 ```
 
-**Expected output:**
-```
-Syncing squad-state branch...
-✓ State branch updated.
-```
+> **Expected:** Both commands may exit silently with no output. This is normal — `squad sync` is a no-op until an active Copilot CLI session has written state through the MCP bridge. Do not expect `"State branch updated"` confirmation. Verify sync results by checking git refs:
+> ```powershell
+> git branch -a
+> ```
+> A `squad-state` branch will appear once state has been written through a live session.
 
-**Workflow:**
-1. Before starting a session: `squad sync --pull`
-2. After finishing a session: `squad sync --push`
-3. Next collaborator: `squad sync --pull` before they begin
-
-> Run `squad sync --help` to see all supported flags. The no-flag form may not be supported — always use explicit `--push` or `--pull`.
+> **Flags:** Run `squad help` for the full command reference. (`squad sync --help` does not provide detailed flag help in v0.11.0 — use `squad help` instead.)
 
 ---
 
@@ -160,14 +168,21 @@ Syncing squad-state branch...
 .squad/.cache/
 ```
 
+**Casting files (`.squad\casting\policy.json`, `.squad\casting\registry.json`):** Under the orphan backend, Squad's pre-commit hook treats these as runtime-owned state and **blocks them from being committed to main**. Do not include them in a `git add .` when the hook is active.
+
+> **v0.11.0 hook behavior note:** The pre-commit hook message may say "refusing to commit two-layer state into the working tree" even when `stateBackend` is `"orphan"`. This wording is a known CLI issue — the protection behavior is correct regardless of the message text.
+
 ---
 
 ## Verification
 
 ```powershell
-squad status    # confirm stateBackend: orphan
-squad doctor    # verify MCP bridge reachable and backend healthy
+Get-Content .squad\config.json    # confirm stateBackend: orphan
+squad status                      # confirm backend and version
+squad doctor                      # check MCP bridge reachable
 ```
+
+> **v0.11.0 known limitation:** `squad doctor` may report false failures (e.g., `decisions.md` not found) for non-local backends — this is expected because decisions live on the state branch, not the working tree. Use `Get-Content .squad\config.json` and `squad status` as primary verification. Do not treat doctor warnings as errors unless state writes are actually failing.
 
 ---
 

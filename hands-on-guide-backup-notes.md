@@ -38,8 +38,9 @@ This document contains reference material and supplementary guidance removed fro
 | npm install fails with proxy/network error | Corporate firewall | Set `npm config set proxy http://proxy:port`; verify registry access |
 | `Not a git repository` error on `squad init` | No `.git` dir | Run `git init` first, then `squad init` |
 | Permission denied on `.squad/` | File ACL issue | Check directory ownership; on Windows run PowerShell as user (not admin) |
-| Windows PowerShell: `&&` requires care | Syntax differs: PowerShell vs cmd.exe | Use `&&` in cmd.exe or PowerShell 7+; in PowerShell 5.x, chain with `;` or use `| Out-Null` between commands |
+| Windows PowerShell: `&&` not recognized | Syntax issue: PowerShell 5.x does not support `&&` | Use `;` to chain commands in PowerShell 5.x (e.g., `mkdir lab; cd lab; git init`). PowerShell 7+ and cmd.exe support `&&`. Upgrade to PowerShell 7+ for the best experience. |
+| npm scripts blocked by execution policy | PowerShell script execution policy prevents npm | If you see "running scripts is disabled", run PowerShell as Administrator and run `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`. This is a troubleshooting step, not a required workshop step. |
 | Squad agent not available in Copilot CLI | MCP bridge not configured | Check `.mcp.json` in your project root; ensure `squad_state` server is configured |
 | Canary token missing warning | `squad.agent.md` truncated or absent | Run `squad upgrade` to restore; restart your Copilot CLI session |
 | `squad cost` shows no data | No orchestration logs yet | Normal on fresh install; data appears after agent sessions run |
-| `squad triage` finds nothing | No labeled issues or no GitHub config | Expected behavior with no issues; add a `squad`-labeled issue to test |
+| `squad triage` hard-errors with "Cannot create platform adapter" | No git `origin` remote configured | Add a GitHub remote: `git remote add origin <url>`. `squad triage` requires a detectable GitHub platform. On a local-only repo this error is expected — triage is optional. |

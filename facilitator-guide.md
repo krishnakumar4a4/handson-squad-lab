@@ -26,7 +26,7 @@ Complete these steps **before participants arrive:**
   - [ ] GitHub CLI `gh` — **required only for the optional GitHub extension** (`gh --version`)
   - [ ] Internet access (npm install must reach the registry)
   - [ ] A local Git repository to work in (or create one: `git init my-lab; cd my-lab`)
-  - [ ] Windows: PowerShell 7+ recommended; avoid legacy cmd.exe
+  - [ ] Windows: PowerShell 7+ recommended. In PowerShell 5.x, chain commands with `;` — `&&` is not supported. Install PowerShell 7+ from Microsoft (`winget install Microsoft.PowerShell`) to avoid chaining issues.
 
 ### Demo Prep (30 min, optional)
 
@@ -34,7 +34,7 @@ If you plan to demo Lab 2 (Coordinator Routing via Copilot CLI) live:
 
 1. Create a sample project with Squad installed locally
 2. Walk through the Squad agent invocation in advance
-3. Prepare the test prompt: `"Task: We need to add unit tests for the auth module."`
+3. Prepare the test prompt: `Task: We need to add unit tests for the auth module.`
 4. Verify the agent responds with correct routing decision
 
 If you plan to demo the optional GitHub extension:
@@ -80,7 +80,7 @@ If facilitating self-paced (~30 min):
 - Watch for:
   - `npm ERR!` → Check corporate proxy settings; have participant adjust
   - `Not a git repository` → Confirm `git init` was run first
-  - On Windows, if someone used `&&` in cmd.exe, remind them to use `;` or switch to PowerShell 7+
+  - On Windows, if someone encounters `&&` syntax errors: `&&` fails in PowerShell 5.x but works in cmd.exe and PowerShell 7+. Remind them to use `;` in PowerShell 5.x, or upgrade to PowerShell 7+.
 
 **Expected:** Each participant has `.squad/team.md` and `.squad/routing.md` created.
 
@@ -106,16 +106,15 @@ If facilitating self-paced (~30 min):
 **Facilitator role:** Demonstrate first, then guide participants
 
 1. **Demonstrate on screen:**
-   - Run `copilot` in your sample Squad project
-   - Select the Squad agent from the picker
-   - Enter: `"Task: We need to add unit tests for the auth module."`
+   - Run `copilot --agent squad` in your sample Squad project
+   - At the session prompt, enter: `Task: We need to add unit tests for the auth module.`
    - Show the agent's routing decision and reasoning
 
 2. **Debrief:** "The coordinator analyzed the task, identified it as a testing concern, and routed to the QA agent per `routing.md`. You can invoke this same agent in your own projects."
 
-3. **Have participants try:** Open `copilot` in their squad-lab directory, select Squad, enter their own task description (any work type), and observe the routing.
+3. **Have participants try:** Run `copilot --agent squad` in their squad-lab directory, enter their own task description (any work type), and observe the routing.
 
-**Troubleshooting note:** If the Squad agent is not available, check `.mcp.json` in the project root to confirm `squad_state` server is configured.
+**Troubleshooting note:** If the Squad agent is not available, check `.mcp.json` in the project root to confirm `squad_state` server is configured. The correct invocation is `copilot --agent squad` (not `copilot` alone and not `gh copilot`). If `copilot` is not found, the Copilot CLI must be pre-installed — see prerequisites.
 
 ### Lab 3 — Model and Reasoning Configuration (~5 min)
 
@@ -128,9 +127,15 @@ If facilitating self-paced (~30 min):
 - Have participants run `squad nap --dry-run` (show preview mode)
 - Run `squad cost --all` together (may show no data on fresh install — that's normal)
 - Have them inspect `.squad/decisions.md` to see the governance structure
-- **Optional triage dry-run:** Run `squad triage` (no `--execute` flag) to show how Squad scans for actionable work
+- **Optional triage dry-run** (requires a git `origin` remote pointing to a GitHub repository):
 
-**Note:** With no GitHub issues configured, `squad triage` will likely report nothing to do — this is correct and not an error.
+```powershell
+squad triage
+```
+
+> **Without a git remote:** `squad triage` hard-errors with `Cannot create platform adapter` on a local-only repo. This is expected. To use triage, participants need `git remote add origin <github-url>`. Skip or treat as optional if participants are on local-only repos.
+
+**Note:** With no GitHub issues configured, `squad triage` may also report no actionable work — this is correct and not an error.
 
 ### Optional Extension — GitHub Issue to PR (10 min, skip if time-constrained)
 
@@ -152,7 +157,7 @@ If facilitating self-paced (~30 min):
 
 **Common questions:**
 - *"Why does my `routing.md` look different?"* → Squad allows custom routing rules per team. The default varies by setup. Show them how to read and understand their specific routing table.
-- *"Can I add my own agent?"* → Yes, `squad cast --name MyAgent --role "Custom Role"` adds an agent. We'll see this in later workshops.
+- *"Can I add my own agent?"* → `squad cast --name <Name> --role "<Role>"` launches a wizard in v0.11.0, but the new member is not yet written to `team.md` — this is a known limitation. Members can be added manually to `.squad/team.md`.
 
 **If someone goes off-track:**
 - Refocus: "Let's read the routing table and identify which agent handles testing. That's the main idea for this lab."
@@ -185,7 +190,7 @@ If facilitating self-paced (~30 min):
 **Expected behaviors on a fresh install:**
 - `squad cost` shows **no data** → Normal; data accumulates after agent sessions run
 - `.squad/orchestration-log/` is **empty** → Normal; logs appear after ceremonies execute
-- `squad triage` finds **nothing** → Normal; no issues labeled yet
+- `squad triage` **hard-errors** → Normal on a local-only repo with no `origin` remote — treat as optional
 - `.squad/decisions.md` shows **governance template** → Normal; decisions accumulate over time
 
 **Reflection question:** "Notice Squad keeps a log of decisions and token usage. As your team grows, you'll use these to stay aligned and track AI-assisted work."
@@ -212,8 +217,8 @@ If a participant is upgrading an existing Squad installation or switching state 
 | Participant misses setup; gets `Not a git repository` on Lab 1 | Have them run `git init` right now, then `squad init` | They skipped Variant A step 1 |
 | `npm install` stalls behind proxy | Set proxy: `npm config set proxy http://proxy:port` | Corporate firewall blocking npm registry |
 | Squad agent not available in Copilot CLI | Have them check `.mcp.json` exists; run `squad upgrade` if needed | MCP bridge missing or outdated |
-| Windows participant uses `&&` and gets error | Remind them: PowerShell uses `;` not `&&` | Legacy cmd.exe syntax |
-| Optional GitHub lab: `squad triage` finds nothing | Check: did they apply the `squad` label to the issue? | Issue not labeled or not in GitHub yet |
+| Windows participant uses `&&` and gets error | Remind them: In PowerShell 5.x, use `;` to chain commands (e.g., `mkdir squad-lab; cd squad-lab; git init`). PowerShell 7+ and cmd.exe support `&&`. | PowerShell 5.x does not support `&&` |
+| Optional GitHub lab: `squad triage` hard-errors | Expected on local-only repos. Requires `git remote add origin <github-url>` first | No `origin` remote configured |
 | Participant gets stuck on Lab 2 routing prompt | Suggest: "Try: 'Route this task: [any work description]'" | Prompt phrasing doesn't trigger clear response |
 
 ---

@@ -120,22 +120,22 @@ Editing these files directly while on `two-layer` or `orphan` backends can cause
 ```powershell
 squad sync --push   # push local mutable state to remote
 squad sync --pull   # pull mutable state from remote
-# squad sync supports push, pull, or both — see: squad sync --help
 ```
 
-**Expected output:**
+> **Expected:** Commands may exit silently with no output. This is normal — sync is a no-op until an active Copilot CLI session has written state through the MCP bridge. Do not expect `"State branch updated"` confirmation. Verify by checking git refs:
+> ```powershell
+> git branch -a
+> ```
+> A `squad-state` branch will appear once state has been written through a live session.
 
-```
-Syncing squad-state branch...
-✓ State branch updated.
-```
+> Run `squad help` for the full command reference. (`squad sync --help` does not provide detailed help in v0.11.0.)
 
 **Collaboration workflow:**
 
-1. Collaborator A runs `squad sync --pull` before starting a session.
-2. After session ends, Collaborator A runs `squad sync --push`.
-3. Collaborator B pulls before their session.
-4. No manual merging of state files is needed — the bridge owns conflict resolution.
+1. Before session: `squad sync --pull`
+2. After session: `squad sync --push`
+3. Next collaborator: `squad sync --pull` before their session
+4. No manual merging needed — the bridge owns conflict resolution.
 
 ---
 
@@ -153,14 +153,28 @@ Syncing squad-state branch...
 
 **Commit** `.squad/config.json` (it contains the `stateBackend` setting, which is team configuration).
 
+**Casting files (`.squad\casting\policy.json`, `.squad\casting\registry.json`):** Under the two-layer backend, the pre-commit hook treats these as runtime-owned state and blocks them from being committed to main. Do not include them in `git add .` when the hook is active. The hook message may say "two-layer state" — this is the correct message for this backend.
+
 ---
 
 ## Verification Steps
 
 ```powershell
-squad status          # confirm stateBackend: two-layer
-squad doctor          # verify MCP bridge reachable and backend healthy
-squad sync --push     # first push after init
+Get-Content .squad\config.json    # confirm stateBackend: two-layer
+squad status                      # confirm backend and version
+squad doctor                      # check MCP bridge
+```
+
+> **v0.11.0 known false warnings from `squad doctor`:** With `stateBackend: "two-layer"`, doctor may report:
+> - `decisions.md` not found — this is expected; decisions live on the state branch, not the working tree.
+> - `Mode: local` in output — this is a display issue; the actual configured backend is `two-layer`.
+>
+> These warnings are CLI defects, not setup errors. Use `Get-Content .squad\config.json` and `.mcp.json` as primary verification. Only investigate further if state writes are actually failing.
+
+After confirming config, push initial state once a Copilot CLI session has run:
+
+```powershell
+squad sync --push
 ```
 
 ---
