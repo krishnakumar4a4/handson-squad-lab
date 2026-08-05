@@ -5,8 +5,6 @@
 **Audience:** Developers learning Squad for the first time  
 **Purpose:** Hands-on walkthrough of Squad default (`local`) init, core capabilities, and labs
 
-[→ Alternative Modes](./alternative-modes-guide.md) · [→ Supplementary (commit guidance, troubleshooting, concepts)](./modes/init/supplementary.md)
-
 ---
 
 ## Prerequisites
@@ -147,8 +145,17 @@ squad triage --execute --max-concurrent 1
 
 ---
 
-**→ [Supplementary Guide](./modes/init/supplementary.md)** — what to commit, conceptual background, troubleshooting, limitations, and responsible-use notes.
+## Guides and resources
 
-**→ [Scenario 1 — Build a Codebase-Specialized Squad](./scenarios/scenario-1-specialized-team.md)** — clone your own repository, run Squad init, and ask Squad to create a team grounded in its codebase patterns.
+**Modes**
 
-**→ [Scenario 2 — Deploy and Test an App in Hyper-V](./scenarios/scenario-2-hyperv-deployment.md)** — build an app with Squad, deploy it to a Windows Hyper-V VM, exercise its UI, and review an evidence-based report.
+- [Init Mode supplementary guide](./modes/init/supplementary.md)
+- [Alternative Modes overview](./alternative-modes-guide.md)
+- [Orphan guide](./modes/orphan/guide.md)
+- [Two-Layer guide](./modes/two-layer/guide.md)
+- [Satellite guide](./modes/satellite/guide.md)
+
+**Scenarios**
+
+- [Scenario 1](./scenarios/scenario-1-specialized-team.md)
+- [Scenario 2](./scenarios/scenario-2-hyperv-deployment.md)
