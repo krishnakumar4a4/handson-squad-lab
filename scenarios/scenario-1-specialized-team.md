@@ -33,13 +33,6 @@ git clone git@github.com:OWNER/REPOSITORY.git REPOSITORY
 cd REPOSITORY
 ```
 
-If SSH is unavailable, use the HTTPS clone URL:
-
-```powershell
-git clone https://github.com/OWNER/REPOSITORY.git REPOSITORY
-cd REPOSITORY
-```
-
 > **Expected:** The repository is cloned and PowerShell is inside its root directory.
 
 ## Step 3 - Initialize Squad
@@ -76,7 +69,7 @@ Start Squad:
 copilot --agent squad
 ```
 
-Paste this prompt exactly:
+Paste the below sample prompt (you can customise it as per your needs):
 
 ```text
 Go through the codebase and create a specialised team for handling issues, feature requests. Also factor in distinct code patterns, styles from the codebase to ensure the fixes and reviews are more natural looking and human friendly.
