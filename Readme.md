@@ -195,4 +195,6 @@ Mark each item when done:
 
 ---
 
-**→ [Supplementary Guide](./supplementary.md)** — what to commit, conceptual background, troubleshooting, limitations, and responsible-use notes.
+**→ [Supplementary Guide](./modes/init/supplementary.md)** — what to commit, conceptual background, troubleshooting, limitations, and responsible-use notes.
+
+**→ [Scenario 1 — Build a Codebase-Specialized Squad](./scenarios/scenario-1-specialized-team.md)** — clone a real Rust/Windows-driver repository, run Squad init, and ask Squad to create a team grounded in the actual codebase patterns.
