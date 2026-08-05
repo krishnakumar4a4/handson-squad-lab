@@ -51,34 +51,28 @@ squad init
 ### 3 — Verify
 
 ```powershell
-Get-Content .squad\team.md
+code .
 ```
 
-> **Expected:** A markdown roster showing your coordinator and at least one member.
+In Visual Studio Code Explorer, open:
 
-```powershell
-Get-Content .squad\routing.md
-```
+- `.squad\team.md` — confirm it contains a markdown roster with the coordinator and team members.
+- `.squad\routing.md` — confirm it maps concrete work types to team members.
+- `.squad\config.json` — confirm it contains `{ "version": 1 }` or similar. No `stateBackend` key means the default `local` backend is active.
 
-> **Expected:** A routing table mapping work types to agent names.
-
-```powershell
-Get-Content .squad\config.json
-```
-
-> **Expected:** `{ "version": 1 }` or similar — no `stateBackend` key means the `local` backend is active.
+> **Expected:** The generated Squad files are visible and readable in the repository.
 
 ---
 
 ## Labs
 
-### Lab 1 — Inspect, Cast, and Routing
+### Lab 1 — Inspect Team and Routing
 
 **Goal:** Read your team state and understand routing.
 
+In Visual Studio Code, inspect `.squad\team.md` and `.squad\routing.md`. Then explore the available writer roles:
+
 ```powershell
-Get-Content .squad\team.md
-Get-Content .squad\routing.md
 squad roles --search writer
 ```
 
@@ -124,7 +118,7 @@ squad start --model gpt-4o
 
 ---
 
-### Lab 4 — Monitoring, Memory, and Ceremonies
+### Lab 4 — Monitoring
 
 **Goal:** Explore session logs, memory, and ceremony patterns.
 
@@ -150,21 +144,9 @@ squad triage --execute --max-concurrent 1
 
 3. Review the PR on GitHub. Comment or merge if satisfied.
 
----
-
-## Completion Checklist
-
-Mark each item when done:
-
-- [ ] Completed Variant A (fresh init) — `.squad/` directory exists
-- [ ] Verified `team.md` and `routing.md` contents
-- [ ] Completed Lab 1 — cast inspection and routing review
-- [ ] Completed Lab 2 — coordinator routing via Copilot CLI
-- [ ] Completed Lab 3 — model/status configuration
-- [ ] (Optional) Completed the GitHub issue-to-PR extension
 
 ---
 
 **→ [Supplementary Guide](./modes/init/supplementary.md)** — what to commit, conceptual background, troubleshooting, limitations, and responsible-use notes.
 
-**→ [Scenario 1 — Build a Codebase-Specialized Squad](./scenarios/scenario-1-specialized-team.md)** — clone a real Rust/Windows-driver repository, run Squad init, and ask Squad to create a team grounded in the actual codebase patterns.
+**→ [Scenario 1 — Build a Codebase-Specialized Squad](./scenarios/scenario-1-specialized-team.md)** — clone your own repository, run Squad init, and ask Squad to create a team grounded in its codebase patterns.
