@@ -1,6 +1,6 @@
 # Squad Hands-On Guide (Init Mode)
 
-**Version:** Squad v0.11.0 · **Estimated Duration:** 60 minutes facilitated or 30 minutes self-paced
+**Version:** Squad v0.11.0 · **Estimated Duration:** 30 minutes self-paced
 
 **Audience:** Developers learning Squad for the first time  
 **Purpose:** Hands-on walkthrough of Squad default (`local`) init, core capabilities, and labs
@@ -18,11 +18,8 @@ Before you start, verify you have:
 - **Git** (`git --version`)
 - **GitHub Copilot CLI** (the standalone `copilot` command) installed and authenticated (`copilot --version`)
   - This is the standalone command-line tool, **distinct from** the GitHub Copilot desktop app and from VS Code's built-in Copilot slash commands.
-  - No official standalone package has been confirmed for automated install via `winget` or `npm`. **Facilitators must pre-install it on participant machines.** See the [official GitHub Copilot CLI installation documentation](https://docs.github.com/en/copilot/github-copilot-in-the-cli) for the authoritative install path.
-  - After `squad init` completes, the verified invocation is `copilot --agent squad`.
-- **Internet access** (npm install must reach the registry)
-- **A local Git repository** to work in (or run `git init my-lab; cd my-lab` to create one)
-- **On Windows:** PowerShell 7+ is recommended. In PowerShell 5.x `&&` is not supported — chain commands with `;` instead.
+  - [Installation reference](https://docs.github.com/en/copilot/how-tos/copilot-cli/set-up-copilot-cli/install-copilot-cli#installing-with-winget-windows)
+
 
 *Note:* GitHub CLI (`gh`) is **optional** and only required for the optional GitHub extension lab.
 
@@ -37,15 +34,14 @@ mkdir squad-lab; cd squad-lab
 git init
 ```
 
-> **Expected:** `Initialized empty Git repository in .../squad-lab/.git/`
-
 ### 2 — Initialize Squad
 
 ```powershell
-npx @bradygaster/squad-cli@latest init
+npm install -g @bradygaster/squad-cli@latest
+squad init
 ```
 
-> **Expected:** Squad prompts you interactively — confirm the package installation, name your team, select an agent universe, and optionally connect a `@copilot` agent. On completion:
+> **Expected:** 
 > - `.squad\` directory created with `team.md` and `routing.md`
 > - Coordinator file placed at `.github\agents\squad.agent.md`
 > - `.copilot\mcp-config.json`, `.github\workflows\`, `.github\skills\`, and `.mcp.json` created
@@ -76,7 +72,7 @@ Get-Content .squad\config.json
 
 ## Labs
 
-### Lab 1 — Inspect, Cast, and Routing *(~10 min)*
+### Lab 1 — Inspect, Cast, and Routing
 
 **Goal:** Read your team state and understand routing.
 
@@ -90,7 +86,7 @@ squad roles --search writer
 
 ---
 
-### Lab 2 — Coordinator Routing via Copilot CLI *(~10 min)*
+### Lab 2 — Coordinator Routing via Copilot CLI 
 
 **Goal:** Invoke the Squad custom agent and observe routing decisions.
 
@@ -100,19 +96,17 @@ squad roles --search writer
 copilot --agent squad
 ```
 
-2. At the session prompt, enter:
+2. At the session prompt, enter you own prompt and ask squad to perform a task:
 
 ```
-Task: We need to add unit tests for the auth module.
+Task: Add a <> feature to this repo.
 ```
-
-> **Expected:** The coordinator identifies this as a testing task, routes to the appropriate squad member per `routing.md`, and explains its reasoning.
 
 **Note:** `copilot --agent squad` is the correct invocation — Squad is a custom agent through the standalone Copilot CLI, not a built-in slash command and not `gh copilot`.
 
 ---
 
-### Lab 3 — Model Selection *(~5 min)*
+### Lab 3 — Model Selection
 
 **Goal:** Understand how to control which model Squad uses.
 
@@ -123,12 +117,6 @@ squad status
 > **Expected:** Shows squad configuration, state backend, and version.
 
 ```powershell
-squad start --help
-```
-
-> **Expected:** Lists flags including `--model`, `--tunnel`, `--port`, `--command`.
-
-```powershell
 squad start --model gpt-4o
 ```
 
@@ -136,7 +124,7 @@ squad start --model gpt-4o
 
 ---
 
-### Lab 4 — Monitoring, Memory, and Ceremonies *(~10 min)*
+### Lab 4 — Monitoring, Memory, and Ceremonies
 
 **Goal:** Explore session logs, memory, and ceremony patterns.
 
@@ -145,29 +133,13 @@ squad nap --dry-run
 squad cost --all
 ```
 
-**Optional — triage dry-run** (requires a git remote named `origin`):
-
-```powershell
-squad triage
-```
-
-> **Expected (with GitHub remote configured):** Squad scans for actionable work and reports findings.
->
-> **Expected (local-only repo with no `origin` remote):** Error — `Could not detect platform: No git remote "origin" found. Cannot create platform adapter.` This is expected. Add `git remote add origin <url>` to use triage.
-
-```powershell
-Get-Content .squad\decisions.md
-```
-
-> **Expected:** Active decisions or the governance template if none are recorded yet.
-
 ---
 
 ### Optional Extension — GitHub Issue to PR
 
 > **Prerequisites:** `gh` CLI authenticated, a GitHub repo with Issues enabled, write permissions.
 
-1. Create an issue with the `squad` label in your GitHub repo.
+1. Create an issue with the `squad` label in your personal GitHub repo (use your own sample repo for this exercise).
 2. Start a triage loop:
 
 ```powershell
@@ -189,9 +161,7 @@ Mark each item when done:
 - [ ] Completed Lab 1 — cast inspection and routing review
 - [ ] Completed Lab 2 — coordinator routing via Copilot CLI
 - [ ] Completed Lab 3 — model/status configuration
-- [ ] Completed Lab 4 — monitoring, memory, and triage (triage optional if no GitHub remote)
 - [ ] (Optional) Completed the GitHub issue-to-PR extension
-- [ ] No unresolved errors in your session
 
 ---
 
