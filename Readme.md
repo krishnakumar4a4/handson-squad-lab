@@ -1,4 +1,4 @@
-# Init Mode — Setup Guide
+# Squad Hands-On Guide (Init Mode)
 
 **Version:** Squad v0.11.0 · **Estimated Duration:** 60 minutes facilitated or 30 minutes self-paced
 
